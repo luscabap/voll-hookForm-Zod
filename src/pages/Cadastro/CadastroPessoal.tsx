@@ -13,11 +13,24 @@ import {
 import { z } from 'zod';
 
 const esquemaCadastro = z.object({
-  nome: z.string().min(3, "O nome deve ter mais de 3 caracteres"),
-  email: z.string().min(1, 'O campo E-mail é obrigatório.').email("Por favor, digite um e-mail válido."),
-  telefone: z.string(),
+  nome: z
+    .string()
+    .min(3, "O nome deve ter mais de 3 caracteres")
+    .transform(value => value.toLocaleUpperCase()),
+  email: z
+    .string()
+    .min(1, 'O campo E-mail é obrigatório.')
+    .email("Por favor, digite um e-mail válido.")
+    .transform(val => val.toLocaleLowerCase()),
+  telefone: z
+  .string()
+  .min(1, 'O telefone é obrigatório.')
+  .regex(/^\(\d{2,3}\) \d{5}-\d{4}$/, "Formato de telefone inválido"),
   senha: z.string().min(6, "A senha deve conter ao menos 6 caracteres."),
   senhaVerificada: z.string().min(1, 'Este campo não pode ser vazio.'),
+}).refine(data => data.senha === data.senhaVerificada, {
+  message: "As senhas não coincidem. Verifique novamente!",
+  path: ["senhaVerificada"]
 })
 
 type FormInputTipos = z.infer<typeof esquemaCadastro>;
