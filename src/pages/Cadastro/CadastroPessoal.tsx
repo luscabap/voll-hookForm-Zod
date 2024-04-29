@@ -13,11 +13,11 @@ import {
 import { z } from 'zod';
 
 const esquemaCadastro = z.object({
-  nome: z.string().min(5),
-  email: z.string(),
+  nome: z.string().min(3, "O nome deve ter mais de 3 caracteres"),
+  email: z.string().min(1, 'O campo E-mail é obrigatório.').email("Por favor, digite um e-mail válido."),
   telefone: z.string(),
-  senha: z.string(),
-  senhaVerificada: z.string(),
+  senha: z.string().min(6, "A senha deve conter ao menos 6 caracteres."),
+  senhaVerificada: z.string().min(1, 'Este campo não pode ser vazio.'),
 })
 
 type FormInputTipos = z.infer<typeof esquemaCadastro>;
