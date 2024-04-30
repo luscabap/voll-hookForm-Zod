@@ -18,9 +18,11 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect } from "react";
+import { supabase } from "../../libs/supabase";
 
 const esquemaCadastroEspecialistaEndereco = z.object({
   endereco: z.object({
+    avatar: z.instanceof(FileList).transform(list => list.item(0)!),
     cep: z.string().min(8, 'Informe um CEP válido'),
     rua: z.string().min(1, 'O campo rua é obrigatório.'),
     numero: z.coerce.number().min(1, 'O campo número é obrigatório.'),
@@ -49,6 +51,7 @@ const CadastroEspecialistaEndereco = () => {
     resolver: zodResolver(esquemaCadastroEspecialistaEndereco),
     defaultValues: {
       endereco: {
+        avatar: new File([""], "dummy.jpg", { type: "image/jpeg" }),
         cep: "",
         rua: "",
         numero: 0,
@@ -58,7 +61,10 @@ const CadastroEspecialistaEndereco = () => {
     }
   })
 
-  const aoSubmeter = (data: FormCadastroEspecilistaEndereco) => {
+  console.log(errors)
+
+  const aoSubmeter = async (data: FormCadastroEspecilistaEndereco) => {
+    await supabase.storage.from("react-form").upload(data.endereco.avatar.name, data.endereco.avatar);
     console.log(data)
   }
 
@@ -89,29 +95,37 @@ const CadastroEspecialistaEndereco = () => {
           <UploadLabel htmlFor="campo-upload">
             <UploadIcon />
             <UploadDescription>Clique para enviar</UploadDescription>
-            <UploadInput accept="image/*" id="campo-upload" type="file" />
+            <UploadInput
+              accept="image/*"
+              id="campo-upload"
+              type="file"
+              {...register('endereco.avatar')}
+            />
           </UploadLabel>
+          {errors.endereco?.cep && (
+            <ErrorMessage>{errors.endereco?.avatar?.message}</ErrorMessage>
+          )}
         </>
         <Divisor />
         <Fieldset>
           <Label htmlFor="campo-cep">CEP</Label>
-          <Input 
-            id="campo-cep" 
-            placeholder="Insira seu CEP" 
-            type="text" 
+          <Input
+            id="campo-cep"
+            placeholder="Insira seu CEP"
+            type="text"
             {...register('endereco.cep')}
             $error={!!errors.endereco?.cep}
           />
           {errors.endereco?.cep && (
-              <ErrorMessage>{errors.endereco?.cep.message}</ErrorMessage>
-            )}
+            <ErrorMessage>{errors.endereco?.cep.message}</ErrorMessage>
+          )}
         </Fieldset>
         <Fieldset>
           <Label htmlFor="campo-rua">Rua</Label>
-          <Input 
-            id="campo-rua" 
-            placeholder="Rua Agarikov" 
-            type="text" 
+          <Input
+            id="campo-rua"
+            placeholder="Rua Agarikov"
+            type="text"
             $error={!!errors.endereco?.rua}
             {...register('endereco.rua')}
           />
@@ -123,28 +137,28 @@ const CadastroEspecialistaEndereco = () => {
         <FormContainer>
           <Fieldset>
             <Label htmlFor="campo-numero-rua">Número</Label>
-            <Input 
-              id="campo-numero-rua" 
-              placeholder="Ex: 1440" 
-              type="text" 
+            <Input
+              id="campo-numero-rua"
+              placeholder="Ex: 1440"
+              type="text"
               $error={!!errors.endereco?.numero}
-              {...register('endereco.numero')}/>
+              {...register('endereco.numero')} />
             {errors.endereco?.numero && (
-            <ErrorMessage>{errors.endereco.numero.message}</ErrorMessage>
-          )}
+              <ErrorMessage>{errors.endereco.numero.message}</ErrorMessage>
+            )}
           </Fieldset>
           <Fieldset>
             <Label htmlFor="campo-bairro">Bairro</Label>
-            <Input 
-              id="campo-bairro" 
-              placeholder="Vila Mariana" 
-              type="text" 
+            <Input
+              id="campo-bairro"
+              placeholder="Vila Mariana"
+              type="text"
               $error={!!errors.endereco?.bairro}
               {...register('endereco.bairro')}
             />
             {errors.endereco?.bairro && (
-            <ErrorMessage>{errors.endereco.bairro.message}</ErrorMessage>
-          )}
+              <ErrorMessage>{errors.endereco.bairro.message}</ErrorMessage>
+            )}
           </Fieldset>
         </FormContainer>
         <Fieldset>
